@@ -42,6 +42,11 @@ The home page follows a store layout: utility bar → sticky header with search 
 
 Single questions still go straight to WhatsApp ("Send a photo", "Ask on WhatsApp" in quick view).
 
+## Design and motion
+
+- **Colours** (`tailwind.config.js`): ink, cream and sand surfaces; deep navy hero; **clay** for small accents on light backgrounds; **brass** for highlights on dark backgrounds only. Every pairing is contrast-checked (notes in the config).
+- **Micro-interactions** (all switched off for visitors who prefer reduced motion): header shadow on scroll, sections fade up as they enter, product photos fade in, card hover lift with a "Quick view" hint, + button pop and an "Added to quote" toast with a *View list* shortcut, arrows that nudge on hover, hero text that rises in per slide, smooth FAQ opening, and a "Popular searches" panel on the search box. Searching "repair" / "fix" goes straight to the repair section.
+
 ## Deploy (GitHub Pages)
 
 1. On GitHub, go to **Settings → Pages**.

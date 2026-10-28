@@ -89,7 +89,7 @@ def main() -> None:
         "@context": "https://schema.org",
         "@graph": [
             {
-                "@type": "Store",
+                "@type": "FurnitureStore",
                 "@id": SITE_URL + "#business",
                 "name": b["name"],
                 "alternateName": b["alternateName"],
@@ -110,6 +110,8 @@ def main() -> None:
                 },
                 "geo": {"@type": "GeoCoordinates", "latitude": b["lat"], "longitude": b["lng"]},
                 "hasMap": b["mapsUrl"],
+                "sameAs": [b["mapsUrl"]],
+                "slogan": "New chairs. Every part. Repairs.",
                 "openingHoursSpecification": [{
                     "@type": "OpeningHoursSpecification",
                     "dayOfWeek": b["openDays"], "opens": b["opens"], "closes": b["closes"],

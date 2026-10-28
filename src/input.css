@@ -32,7 +32,7 @@
   .btn-outline { @apply border border-ink/25 bg-transparent text-ink hover:border-ink; }
   .btn-on-dark { @apply border border-white/40 text-white hover:border-white; }
   .field { @apply mt-1 block min-h-12 w-full rounded-md border border-stone-500 bg-white px-3 text-base text-ink placeholder:text-stone-500 aria-[invalid=true]:border-red-700; }
-  .eyebrow { @apply text-[12px] font-bold uppercase tracking-[0.18em] text-slide-rust; }
+  .eyebrow { @apply text-[12px] font-bold uppercase tracking-[0.18em] text-clay; }
   .h2 { @apply font-display text-[40px] font-bold uppercase leading-[0.92] tracking-tight md:text-[56px]; }
   .link-arrow { @apply inline-flex min-h-11 items-center gap-2 text-[13px] font-bold uppercase tracking-[0.12em] text-ink underline-offset-4 hover:underline; }
 }
@@ -53,13 +53,48 @@ body:has(dialog[open]) { overflow: hidden; }
 ::view-transition-group(*) { animation-duration: 220ms; animation-timing-function: cubic-bezier(0.2, 0, 0, 1); }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 160ms; }
 
-/* Quote counter pop */
+/* Quote counter / add button pop */
 @keyframes pop { 50% { transform: scale(1.18); } }
 .is-popping { animation: pop 240ms cubic-bezier(0.2, 0, 0, 1); }
 
+/* Taps feel native: no grey flash, press feedback comes from the styles */
+a, button, summary { -webkit-tap-highlight-color: transparent; }
+
+/* Arrows nudge forward on hover */
+.link-arrow > span[aria-hidden="true"], .btn > span[aria-hidden="true"] { display: inline-block; transition: transform 200ms cubic-bezier(0.2, 0, 0, 1); }
+.link-arrow:hover > span[aria-hidden="true"], .btn:hover > span[aria-hidden="true"] { transform: translateX(4px); }
+
+/* Header gains a soft shadow once the page scrolls */
+#top { transition: box-shadow 200ms ease-out; }
+#top.is-scrolled { box-shadow: 0 10px 24px -18px rgb(21 23 28 / 0.45); }
+
+/* Sections fade up as they scroll in (only when JS runs — see the html.js flag) */
+.js [data-reveal] { opacity: 0; transform: translateY(18px); transition: opacity 500ms cubic-bezier(0.2, 0, 0, 1), transform 500ms cubic-bezier(0.2, 0, 0, 1); }
+.js [data-reveal].is-in { opacity: 1; transform: none; }
+
+/* Product photos fade in as they load instead of popping */
+.js .js-grid img { opacity: 0; transition: opacity 400ms ease-out, transform 500ms cubic-bezier(0.2, 0, 0, 1); }
+.js .js-grid img.is-loaded { opacity: 1; }
+
+/* Hero: a slide's text rises in when it becomes the current slide */
+.slide-copy > * { transition: opacity 450ms cubic-bezier(0.2, 0, 0, 1), transform 450ms cubic-bezier(0.2, 0, 0, 1); }
+.slide-copy > :nth-child(2) { transition-delay: 60ms; }
+.slide-copy > :nth-child(3) { transition-delay: 120ms; }
+.slide-copy > :nth-child(4) { transition-delay: 180ms; }
+.js-slide[inert] .slide-copy > * { opacity: 0; transform: translateY(14px); transition-delay: 0ms; }
+
+/* FAQ answers open smoothly where the browser supports it (others just open) */
+:root { interpolate-size: allow-keywords; }
+details::details-content { block-size: 0; overflow-y: clip; transition: block-size 280ms cubic-bezier(0.2, 0, 0, 1), content-visibility 280ms allow-discrete; }
+details[open]::details-content { block-size: auto; }
+
+/* Toast in/out */
+.js-toast.is-shown { visibility: visible; opacity: 1; transform: none; }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  *, *::before, *::after, dialog[open], dialog[open]::backdrop, ::view-transition-group(*) {
+  *, *::before, *::after, dialog[open], dialog[open]::backdrop, ::view-transition-group(*), details::details-content {
     animation: none !important; transition: none !important;
   }
+  .js [data-reveal], .js-slide[inert] .slide-copy > * { opacity: 1; transform: none; }
 }

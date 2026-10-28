@@ -159,6 +159,37 @@
     markCurrent(0);
   }
 
+  /* ---------- Header shadow once the page scrolls ---------- */
+  var header = document.getElementById('top');
+  if (header) {
+    var headerTick = false;
+    var setHeader = function () { headerTick = false; header.classList.toggle('is-scrolled', window.scrollY > 8); };
+    window.addEventListener('scroll', function () {
+      if (!headerTick) { headerTick = true; window.requestAnimationFrame(setHeader); }
+    }, { passive: true });
+    setHeader();
+  }
+
+  /* ---------- Sections fade up as they scroll in ---------- */
+  var reveals = document.querySelectorAll('[data-reveal]');
+  if ('IntersectionObserver' in window && !reduceMotion.matches) {
+    var revealIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('is-in'); revealIO.unobserve(en.target); }
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    reveals.forEach(function (el) { revealIO.observe(el); });
+  } else {
+    reveals.forEach(function (el) { el.classList.add('is-in'); });
+  }
+
+  /* ---------- Product photos fade in when loaded ---------- */
+  document.querySelectorAll('.js-grid img').forEach(function (img) {
+    var done = function () { img.classList.add('is-loaded'); };
+    if (img.complete && img.naturalWidth) done();
+    else { img.addEventListener('load', done); img.addEventListener('error', done); }
+  });
+
   /* ---------- "Need help?" pill: hidden while the hero is on screen,
      so it never covers the slider arrows ---------- */
   var help = document.querySelector('.js-help');
@@ -273,13 +304,55 @@
       typingTimer = window.setTimeout(function () { setQuery(inp.value, { instant: true, quiet: true }); }, 150);
     });
   });
+  var REPAIR_WORDS = /\b(repair|repairs|fix|fixing|marammat|mistri|theek)\b/i;
+  var repairsSection = document.getElementById('repairs');
+
+  function runSearch(formEl, raw) {
+    window.clearTimeout(typingTimer);
+    var inp = formEl.querySelector('.js-q');
+    hideSuggest(formEl);
+    // "chair repair", "fix my chair"… → the repair service, not the product grid
+    if (REPAIR_WORDS.test(raw) && repairsSection) {
+      setQuery('', { instant: true, quiet: true });
+      repairsSection.scrollIntoView({ behavior: behavior(), block: 'start' });
+      announce('Showing chair repairs');
+    } else {
+      setQuery(raw, { scroll: true, instant: true });
+    }
+    inp.blur(); // closes the phone keyboard so the results are visible
+  }
+
+  // Popular searches panel: shows when an empty search box gets focus
+  function showSuggest(formEl) {
+    var panel = formEl.querySelector('.js-suggest');
+    if (panel) panel.classList.remove('hidden');
+  }
+  function hideSuggest(formEl) {
+    var panel = formEl.querySelector('.js-suggest');
+    if (panel) panel.classList.add('hidden');
+  }
+
   document.querySelectorAll('.js-search').forEach(function (formEl) {
+    var inp = formEl.querySelector('.js-q');
     formEl.addEventListener('submit', function (e) {
       e.preventDefault();
-      window.clearTimeout(typingTimer);
-      var inp = formEl.querySelector('.js-q');
-      setQuery(inp.value, { scroll: true, instant: true });
-      inp.blur(); // closes the phone keyboard so the results are visible
+      runSearch(formEl, inp.value);
+    });
+    inp.addEventListener('focus', function () { if (!inp.value) showSuggest(formEl); });
+    inp.addEventListener('input', function () { if (inp.value) hideSuggest(formEl); else showSuggest(formEl); });
+    formEl.addEventListener('focusout', function (e) {
+      if (!formEl.contains(e.relatedTarget)) hideSuggest(formEl);
+    });
+    formEl.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { hideSuggest(formEl); inp.focus(); }
+    });
+    formEl.querySelectorAll('[data-suggest]').forEach(function (btn) {
+      btn.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep focus in the box
+      btn.addEventListener('click', function () {
+        var term = btn.getAttribute('data-suggest');
+        inp.value = term;
+        runSearch(formEl, term);
+      });
     });
   });
   var clearBtn = document.querySelector('.js-search-clear');
@@ -321,6 +394,13 @@
     if (label) label.textContent = on ? 'Added ✓' : 'Add to quote';
   }
 
+  function popEl(el) {
+    if (!el || reduceMotion.matches) return;
+    el.classList.remove('is-popping');
+    void el.offsetWidth; // restart the animation
+    el.classList.add('is-popping');
+  }
+
   function renderCounter(pop) {
     var n = quote.size;
     counters.forEach(function (c) {
@@ -329,11 +409,7 @@
       c.classList.toggle('text-white', n > 0);
       c.classList.toggle('bg-stone-300', n === 0);
       c.classList.toggle('text-ink', n === 0);
-      if (pop && !reduceMotion.matches) {
-        c.classList.remove('is-popping');
-        void c.offsetWidth; // restart the animation
-        c.classList.add('is-popping');
-      }
+      if (pop) popEl(c);
     });
     quoteBtns.forEach(function (b) {
       var sr = b.querySelector('.js-quote-sr'); // tab-bar button: visible "Quote" + hidden count
@@ -348,11 +424,41 @@
     var on = !quote.has(id);
     if (on) quote.set(id, { name: name, qty: 1 }); else quote.delete(id);
     var card = cardFor(id);
-    if (card) setPressed(card.querySelector('[data-add-quote]'), on);
+    if (card) {
+      var btn = card.querySelector('[data-add-quote]');
+      setPressed(btn, on);
+      if (on) popEl(btn);
+    }
     if (qvCurrent && qvCurrent.getAttribute('data-id') === id) setPressed(qvAdd, on);
     saveQuote();
     renderCounter(true);
     announce(name + (on ? ' added' : ' removed') + '. Quote list: ' + plural(quote.size, 'item') + '.');
+    if (on && !document.querySelector('dialog[open]')) showToast(name);
+  }
+
+  /* ---------- "Added to quote" toast ----------
+     Visual confirmation with a shortcut to the list. The #live region does
+     the screen-reader announcement; the toast stays while hovered or focused. */
+  var toast = document.querySelector('.js-toast');
+  var toastText = toast && toast.querySelector('.js-toast-text');
+  var toastTimer;
+  function hideToast() { if (toast) toast.classList.remove('is-shown'); }
+  function armToast() {
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(hideToast, 3200);
+  }
+  function showToast(name) {
+    if (!toast) return;
+    toastText.textContent = 'Added: ' + name;
+    toast.classList.add('is-shown');
+    armToast();
+  }
+  if (toast) {
+    toast.addEventListener('mouseenter', function () { window.clearTimeout(toastTimer); });
+    toast.addEventListener('mouseleave', armToast);
+    toast.addEventListener('focusin', function () { window.clearTimeout(toastTimer); });
+    toast.addEventListener('focusout', armToast);
+    toast.addEventListener('click', hideToast);
   }
 
   // Restore button states from a previous page view in this session

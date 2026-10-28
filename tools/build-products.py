@@ -116,14 +116,15 @@ def card(p):
              f'tracking-wider text-white">{e(p["badge"])}</span>') if p.get("badge") else ""
     return f'''          <li data-cat="{p["cat"]}">
             <article data-card data-id="{e(p["id"])}" data-cat="{p["cat"]}" data-kind="{p["kind"]}" data-name="{e(p["name"])}" data-fixes="{e(p["fixes"])}" data-fixes-label="{label}" data-note="{e(p["note"])}" data-price="{e(price)}" class="group relative flex h-full flex-col">
-              <div class="relative aspect-square overflow-hidden rounded-card bg-sand">
+              <div class="relative aspect-square overflow-hidden rounded-card bg-sand transition-shadow duration-300 group-hover:shadow-lift">
               {img_tag(p)}{badge}
-              <button type="button" data-add-quote aria-pressed="false" aria-label="Add {e(p["name"])} to quote" class="absolute right-2 top-2 z-10 grid size-11 place-items-center rounded-full bg-white/95 text-ink shadow-card transition-colors duration-150 hover:bg-white aria-pressed:bg-emerald-700 aria-pressed:text-white [&[aria-pressed=false]_.i-on]:hidden [&[aria-pressed=true]_.i-off]:hidden">
+              <span class="pointer-events-none absolute inset-x-2.5 bottom-2.5 hidden translate-y-2 rounded-md bg-white/95 py-2.5 text-center text-[12px] font-bold uppercase tracking-[0.12em] text-ink opacity-0 shadow-card transition duration-200 ease-out group-hover:translate-y-0 group-hover:opacity-100 md:block" aria-hidden="true">Quick view</span>
+              <button type="button" data-add-quote aria-pressed="false" aria-label="Add {e(p["name"])} to quote" class="absolute right-2 top-2 z-10 grid size-11 place-items-center rounded-full bg-white/95 text-ink shadow-card transition duration-150 hover:bg-white active:scale-90 aria-pressed:bg-emerald-700 aria-pressed:text-white [&[aria-pressed=false]_.i-on]:hidden [&[aria-pressed=true]_.i-off]:hidden">
                 <svg class="i-off size-5" aria-hidden="true"><use href="#i-plus"/></svg><svg class="i-on size-5" aria-hidden="true"><use href="#i-check"/></svg>
               </button>
               </div>
               <p class="mt-3 text-[12px] font-bold uppercase tracking-wider text-stone-600">{e(CATEGORIES[p["cat"]])}</p>
-              <h3 class="mt-0.5 text-[15px] font-medium leading-5 text-ink sm:text-base">
+              <h3 class="mt-0.5 text-[15px] font-medium leading-5 text-ink decoration-ink/30 underline-offset-4 group-hover:underline sm:text-base">
                 <button type="button" data-quickview class="text-left after:absolute after:inset-0 after:rounded-card focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-brand-600 focus-visible:after:ring-offset-2">{e(p["name"])}</button>
               </h3>
               <p class="mt-1 text-[13px] leading-snug text-stone-600">{label}: {e(p["fixes"])}</p>
