@@ -22,9 +22,9 @@ BUSINESS = {
     "name": "Ali Chair Parts",
     "alternateName": "Chair Parts",
     "description": (
-        "Office and gaming chair parts shop in Kohati Bazar, Rawalpindi: gas lift cylinders, "
-        "5-star chair bases, castor wheels, armrests, tilt and synchro mechanisms, seat foam "
-        "and complete office and gaming chairs. Wholesale, retail and general order supplier."
+        "Importer and seller of office and gaming chairs and replacement chair parts in Kohati Bazar, "
+        "Rawalpindi: imported chairs, gas lift cylinders, 5-star chair bases, castor wheels, armrests, "
+        "tilt and synchro mechanisms and seat foam. Wholesale, retail and general order supplier."
     ),
     "telephone": "+92-300-2603791",
     "street": "Shop # 0/789, Near Shahid Steel Store, Kohati Bazar",
@@ -69,8 +69,8 @@ def main() -> None:
         attr = lambda k: html.unescape(re.search(rf'data-{k}="([^"]*)"', card).group(1))
         name = attr("name")
         img = re.search(r'<img[^>]+src="([^"]+)"', card)
-        item = {"@type": "Product", "name": name, "description": attr("note"),
-                "brand": {"@type": "Brand", "name": "Ali Chair Parts"}}
+        # No "brand": chairs are imported and the shop is not the maker. Add the real brand when known.
+        item = {"@type": "Product", "name": name, "description": attr("note")}
         if img:
             item["image"] = img.group(1)
         products.append({"@type": "Offer", "itemOffered": item, "availability": "https://schema.org/InStock",
@@ -112,10 +112,10 @@ def main() -> None:
                     "@type": "ContactPoint", "telephone": b["telephone"], "contactType": "sales",
                     "availableLanguage": ["en", "ur"],
                 },
-                "knowsAbout": ["Office chair repair parts", "Gas lift cylinders", "Chair castor wheels",
-                               "5-star chair bases", "Chair armrests", "Chair tilt mechanisms", "Gaming chairs"],
+                "knowsAbout": ["Imported office chairs", "Gaming chairs", "Office chair repair parts", "Gas lift cylinders", "Chair castor wheels",
+                               "5-star chair bases", "Chair armrests", "Chair tilt mechanisms"],
                 "hasOfferCatalog": {
-                    "@type": "OfferCatalog", "name": "Office and gaming chair parts",
+                    "@type": "OfferCatalog", "name": "Office and gaming chairs and parts",
                     "itemListElement": products,
                 },
             },

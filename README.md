@@ -1,6 +1,6 @@
 # Ali Chair Parts — website
 
-Single-page website for **Ali Chair Parts**, Kohati Bazar, Rawalpindi: office and gaming chair parts, wholesale and retail.
+Single-page online-store-style website for **Ali Chair Parts**, Kohati Bazar, Rawalpindi: imported office and gaming chairs plus replacement chair parts, wholesale and retail.
 
 Static HTML + Tailwind CSS + one small JavaScript file. Tailwind is compiled at deploy time by GitHub Actions; there is no framework and no server.
 
@@ -11,7 +11,7 @@ index.html                          The whole page (product cards generated, see
 src/input.css                       Tailwind source: fonts, components (buttons, fields), motion
 tailwind.config.js                  Design tokens: brand colours, fonts, radius, shadows
 assets/css/tw.css                   Built CSS (generated — don't edit by hand)
-assets/js/main.js                   Menu, filters, quote list, quick view, quote request, open/closed badge
+assets/js/main.js                   Hero slider, category tabs, search, quote list, quick view, quote request, open/closed status
 assets/fonts/                       Self-hosted Barlow fonts (SIL Open Font License)
 assets/img/                         Favicon, app icons, og-image.jpg (link preview)
 tools/build-products.py             Product list → catalog cards in index.html
@@ -32,9 +32,11 @@ python3 -m http.server 8080
 
 ## How buying works on the site
 
-1. **Find the part:** hero tiles, "What's wrong with your chair?" tiles and the sticky filter chips all filter the same catalog.
-2. **Quick view:** tap a card for a larger photo and a "Check your old part" measuring guide (`MEASURE` in `main.js`).
-3. **Quote list:** "Add to quote" collects parts (kept for the browser session); the header shows the count.
+The home page follows a store layout: utility bar → sticky header with search and quote list → category nav → 3-slide hero (swipe, arrows or 01/02/03; no auto-play) → value bar → shop-by-category tiles → in-stock grid with category tabs → bulk-order and repair banners → "What's wrong with your chair?" → 3 steps → FAQ → visit/map → footer. Phones get a bottom tab bar (Home, Categories, Quote, WhatsApp, Call).
+
+1. **Find it:** category nav, category tiles, hero buttons, problem tiles and the sticky tabs all filter the same grid. The search box (press `/` on desktop) matches names, notes and what each part fixes, plus common words like "wheel", "cylinder" or "sinking" (`SYNONYMS` in `main.js`). No match shows a "Send a photo" prompt.
+2. **Quick view:** tap a card for a larger photo; parts show a "Check your old part" measuring guide, chairs a "Before you buy" note (`MEASURE` in `main.js`).
+3. **Quote list:** the + on each card collects items (kept for the browser session); the header and the phone tab bar show the count.
 4. **Request a quote:** the form checks name, mobile and city, then opens WhatsApp with a structured message (parts × quantities, details, contact). Nothing is sent to a server or stored.
 
 Single questions still go straight to WhatsApp ("Send a photo", "Ask on WhatsApp" in quick view).
@@ -54,9 +56,10 @@ The page is client-ready, with no visible placeholders. A few details came from 
 | Item | Where | Status |
 |---|---|---|
 | Opening hours (Sat–Thu 9am–5pm, Friday closed) | Visit section, FAQ, structured data | From the Google Maps listing — confirm |
-| "Rated 5.0 on Google" | Hero | From the Google Maps listing (4 reviews at the time of writing) |
+| "5.0 · 4 Google reviews" | Visit section | From the Google Maps listing at the time of writing |
 | Map pin and directions | Visit section | Pinned to the shop's Google Maps place ("Chair Parts", Shop # 0/789, Kohati Bazar) |
-| Product photos | Product cards, hero tiles | Free-licensed stand-ins from Wikimedia Commons (credited in the footer). Replace with the shop's own photos |
+| Chair models | Office/gaming chair cards, hero slides | Four generic chair types stand in for the actual imported models. Replace with the real models, names and photos |
+| Product photos | Cards, hero, category tiles, banners | Free-licensed stand-ins from Wikimedia Commons (credited in the footer). Replace with the shop's own photos (hotlinked Wikimedia images can also set a Wikimedia cookie, which costs a few Lighthouse best-practice points) |
 | Prices | Product cards | Cards show "Price on request". Set `price` per product in `tools/build-products.py` to show "from Rs …" |
 | Delivery | How it works, step 3 | Says "ask us about getting it sent to you" — update if the shop delivers |
 | `og:image` | `<head>` | Add a 1200×630 photo for link previews on WhatsApp/Facebook |
@@ -65,7 +68,7 @@ Note: the Google listing shows a second phone number (0340-5791689). The site on
 
 ## Editing common things
 
-- **Products:** edit `PRODUCTS` in `tools/build-products.py` (name, note, badge, photo, price), then run `python3 tools/build-products.py && python3 tools/update-structured-data.py`.
+- **Products:** edit `PRODUCTS` in `tools/build-products.py` (name, category, note, badge, photo, price). Chairs use `kind="chair"` (card says "Good for"), parts say "Fixes". Then run `python3 tools/build-products.py && python3 tools/update-structured-data.py`.
 - **Real photos:** put them in `assets/img/parts/`, add an entry to `PHOTOS` with `"src": "assets/img/parts/<file>.webp"` (add `"fit": "contain"` for cut-outs on white), and point the product's `photo` at it. Same angle and white background for every part works best.
 - **Specs (phase 3):** when the owner supplies supplier labels, add them to each product and show up to 3 chips (Fit / Strength / Size) — see the design spec.
 - **Measuring guides:** `MEASURE` in `assets/js/main.js`, one list per part kind.
@@ -77,7 +80,7 @@ Note: the Google listing shows a second phone number (0340-5791689). The site on
 
 What's in place:
 
-- **Title, description and headings** target "office & gaming chair parts in Rawalpindi"; the H1 includes the location.
+- **Title, description and headings** target "imported office & gaming chairs and parts in Rawalpindi"; the H1 (first hero slide) includes the location.
 - **Structured data** (JSON-LD in `<head>`): Store (name, address, phone, map, hours, area served, product catalog), WebSite, WebPage and FAQPage. It's generated from the page — after editing the FAQ, products, address, phone or hours, run:
 
   ```bash
@@ -86,7 +89,7 @@ What's in place:
 
 - **Link previews** for WhatsApp/Facebook/X (`og:*`, `twitter:*`, `assets/img/og-image.jpg`).
 - **Canonical URL, sitemap, robots, manifest, 404 page.**
-- **Speed:** fonts self-hosted and preloaded, images sized and lazy-loaded, the map loads only when scrolled near. Lighthouse: SEO 100, Accessibility 100, Best Practices 100, Performance 94 (mobile) / 99 (desktop).
+- **Speed:** fonts self-hosted and preloaded, images sized and lazy-loaded, the map loads only when scrolled near. Lighthouse (store layout): SEO 100, Accessibility 100, Performance ~90 mobile / 100 desktop.
 
 ### Steps only the owner can do (they matter most for local search)
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the product catalog in index.html from the PRODUCTS list below.
+"""Generate the product grid in index.html from the PRODUCTS list below.
 
 Edit PRODUCTS (names, notes, photos, badges, prices), then run:
 
@@ -7,8 +7,8 @@ Edit PRODUCTS (names, notes, photos, badges, prices), then run:
     python3 tools/update-structured-data.py   # keeps Google's data in sync
 
 Cards are written between the <!-- PRODUCTS:START --> / <!-- PRODUCTS:END -->
-markers, grouped by category. Each card's "Add to quote" and quick view read
-their data from the card's data-* attributes, so nothing else needs editing.
+markers. Each card's "Add to quote", quick view and search read their data from
+the card's data-* attributes, so nothing else needs editing.
 """
 import html
 import re
@@ -32,21 +32,30 @@ PHOTOS = {
     "sihoo21": {"wiki": ("e/e0", "Sihoo_M57_mesh_office_chair_21.jpg")},
     "sihoo22": {"wiki": ("d/d1", "Sihoo_M57_mesh_office_chair_22.jpg")},
     "gaming": {"wiki": ("b/b2", "Gaming_chair.jpg")},
+    "gaming1": {"wiki": ("d/db", "Gaming_chair_1.jpg")},
 }
 
-# Category order = display order. "blurb" sits beside the group heading.
-CATEGORIES = [
-    ("gas", "Gas lifts", "For a seat that sinks or won't adjust"),
-    ("base", "Wheels & bases", "For stuck wheels or a cracked base"),
-    ("arm", "Armrests", "For loose or broken arms"),
-    ("mech", "Mechanisms", "For a chair that won't tilt or lock"),
-    ("seat", "Seats & foam", "For a flat or torn cushion"),
-    ("chair", "Complete chairs", "Mesh office and gaming chairs"),
-]
+# Category ids are used by the filter tabs, category tiles and quick view (CATEGORY_NAMES in main.js).
+CATEGORIES = {
+    "office": "Office chairs", "gaming": "Gaming chairs", "gas": "Gas lifts", "base": "Wheels & bases",
+    "arm": "Armrests", "mech": "Mechanisms", "seat": "Seats & foam",
+}
 
-# kind = which "check your old part" guide quick view shows (see MEASURE in assets/js/main.js).
+# kind = which "check your old part" guide quick view shows (MEASURE in assets/js/main.js).
 # price = None shows "Price on request"; set a number (e.g. 1800) to show "from Rs 1,800".
 PRODUCTS = [
+    dict(id="ch-mesh", cat="office", kind="chair", name="Mesh office chair with headrest", fixes="long days at the desk",
+         note="Breathable mesh back, adjustable arms and headrest, chrome base.", photo="sihoo04", pos="50% 30%",
+         alt="Black mesh office chair with headrest and chrome base", badge="Imported", price=None),
+    dict(id="ch-office", cat="office", kind="chair", name="Office chair — fabric, with arms", fixes="everyday office use",
+         note="Padded fabric seat and back, fixed arms, 5-star base.", photo="buero", pos="50% 35%",
+         alt="Black fabric office chair with arms", badge="Imported", price=None),
+    dict(id="ch-gaming", cat="gaming", kind="chair", name="Gaming chair with footrest", fixes="long gaming sessions",
+         note="Recline, lumbar pillow and pull-out footrest.", photo="gaming", pos="50% 35%",
+         alt="Black and red gaming chair", badge="Imported", price=None),
+    dict(id="ch-racing", cat="gaming", kind="chair", name="Gaming chair — racing style", fixes="home and studio setups",
+         note="High back, bucket seat and padded arms.", photo="gaming1", pos="50% 40%",
+         alt="Red and white racing-style gaming chair", badge="Imported", price=None),
     dict(id="gl-std", cat="gas", kind="gas", name="Gas lift cylinder — standard", fixes="seat sinking",
          note="The part that holds your seat up. Fits most office chairs.", photo="gaslift",
          alt="Office chair gas lift cylinder", badge="Most asked", price=None),
@@ -80,79 +89,57 @@ PRODUCTS = [
     dict(id="st-foam", cat="seat", kind="seat", name="Seat foam & cover", fixes="flat or torn cushion",
          note="Comfortable new cushion in fabric or leatherette.", photo="sihoo15", pos="50% 60%",
          alt="Office chair seat cushion", price=None),
-    dict(id="ch-mesh", cat="chair", kind="chair", name="Mesh office chair with headrest", fixes="back pain at the desk",
-         note="Breathable mesh back, adjustable arms and headrest.", photo="sihoo04", pos="50% 30%",
-         alt="Black mesh office chair with headrest and chrome base", price=None),
-    dict(id="ch-gaming", cat="chair", kind="chair", name="Gaming chair with footrest", fixes="long gaming sessions",
-         note="Recline, lumbar pillow and pull-out footrest.", photo="gaming", pos="50% 35%",
-         alt="Black and red gaming chair", price=None),
 ]
 
 
-def img_attrs(p):
+def img_tag(p):
     photo = PHOTOS[p["photo"]]
     fit = photo.get("fit", "cover")
-    cls = "size-full transition-transform duration-300 ease-out group-hover:scale-[1.03] " + (
-        "object-contain bg-white p-3" if fit == "contain" else "object-cover")
+    cls = "size-full transition-transform duration-500 ease-out group-hover:scale-[1.04] " + (
+        "object-contain p-6 mix-blend-multiply" if fit == "contain" else "object-cover")
     style = f' style="object-position: {p["pos"]}"' if p.get("pos") and fit == "cover" else ""
     if "wiki" in photo:
         h, name = photo["wiki"]
         t = lambda w: f"{WIKI}{h}/{name}/{w}px-{name}"
-        src = f'src="{t(500)}" srcset="{t(330)} 330w, {t(500)} 500w, {t(960)} 960w" sizes="(min-width: 1024px) 270px, (min-width: 768px) 31vw, 47vw"'
+        src = (f'src="{t(500)}" srcset="{t(330)} 330w, {t(500)} 500w, {t(960)} 960w" '
+               f'sizes="(min-width: 1280px) 300px, (min-width: 1024px) 23vw, (min-width: 640px) 31vw, 47vw"')
     else:
         src = f'src="{photo["src"]}"'
-    return f'<img class="{cls}" {src} alt="{html.escape(p["alt"])}" width="500" height="375" loading="lazy" decoding="async"{style}>'
+    return f'<img class="{cls}" {src} alt="{html.escape(p["alt"])}" width="500" height="500" loading="lazy" decoding="async"{style}>'
 
 
 def card(p):
     e = lambda s: html.escape(s, quote=True)
-    badge = (f'\n                <span class="absolute left-2 top-2 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-semibold uppercase '
-             f'tracking-wider text-amber-800 ring-1 ring-amber-200">{e(p["badge"])}</span>') if p.get("badge") else ""
     price = f'from Rs {p["price"]:,}' if p.get("price") else "Price on request"
-    return f'''            <li>
-              <article data-card data-id="{e(p["id"])}" data-cat="{p["cat"]}" data-kind="{p["kind"]}" data-name="{e(p["name"])}" data-fixes="{e(p["fixes"])}" data-note="{e(p["note"])}" data-price="{e(price)}"
-                class="group relative flex h-full flex-col overflow-hidden rounded-card border border-slate-200 bg-white shadow-card transition duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lift">
-                <div class="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                  {img_attrs(p)}{badge}
-                </div>
-                <div class="flex flex-1 flex-col gap-1.5 p-3 sm:gap-2 sm:p-4">
-                  <h4 class="line-clamp-2 text-[15px] font-bold leading-5 sm:text-[17px] sm:leading-[22px]">
-                    <button type="button" data-quickview class="text-left after:absolute after:inset-0 after:z-0 after:rounded-card focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-brand-600">{e(p["name"])}</button>
-                  </h4>
-                  <p class="text-[13px] font-semibold leading-snug text-slate-700"><span class="font-medium text-slate-500">Fixes:</span> {e(p["fixes"])}</p>
-                  <p class="hidden text-sm leading-5 text-slate-600 sm:block">{e(p["note"])}</p>
-                  <p class="mt-auto pt-1 text-[13px] font-semibold text-slate-900 sm:text-sm">{e(price)}</p>
-                  <button type="button" data-add-quote aria-pressed="false" class="btn btn-action relative z-10 min-h-11 whitespace-nowrap px-2.5 text-[15px] sm:px-3 aria-pressed:bg-emerald-50 aria-pressed:text-emerald-800 aria-pressed:ring-1 aria-pressed:ring-emerald-200 aria-pressed:hover:bg-emerald-100 [&[aria-pressed=true]>svg]:hidden">
-                    <svg class="hidden size-[18px] shrink-0 sm:block" aria-hidden="true"><use href="#i-plus"/></svg><span data-label>Add to quote</span>
-                  </button>
-                </div>
-              </article>
-            </li>'''
+    label = "Good for" if p["kind"] == "chair" else "Fixes"
+    badge = (f'\n              <span class="absolute left-2.5 top-2.5 bg-ink px-2 py-1 text-[11px] font-bold uppercase leading-none '
+             f'tracking-wider text-white">{e(p["badge"])}</span>') if p.get("badge") else ""
+    return f'''          <li data-cat="{p["cat"]}">
+            <article data-card data-id="{e(p["id"])}" data-cat="{p["cat"]}" data-kind="{p["kind"]}" data-name="{e(p["name"])}" data-fixes="{e(p["fixes"])}" data-fixes-label="{label}" data-note="{e(p["note"])}" data-price="{e(price)}" class="group relative flex h-full flex-col">
+              <div class="relative aspect-square overflow-hidden rounded-card bg-sand">
+              {img_tag(p)}{badge}
+              <button type="button" data-add-quote aria-pressed="false" aria-label="Add {e(p["name"])} to quote" class="absolute right-2 top-2 z-10 grid size-11 place-items-center rounded-full bg-white/95 text-ink shadow-card transition-colors duration-150 hover:bg-white aria-pressed:bg-emerald-700 aria-pressed:text-white [&[aria-pressed=false]_.i-on]:hidden [&[aria-pressed=true]_.i-off]:hidden">
+                <svg class="i-off size-5" aria-hidden="true"><use href="#i-plus"/></svg><svg class="i-on size-5" aria-hidden="true"><use href="#i-check"/></svg>
+              </button>
+              </div>
+              <p class="mt-3 text-[12px] font-bold uppercase tracking-wider text-stone-600">{e(CATEGORIES[p["cat"]])}</p>
+              <h3 class="mt-0.5 text-[15px] font-medium leading-5 text-ink sm:text-base">
+                <button type="button" data-quickview class="text-left after:absolute after:inset-0 after:rounded-card focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-brand-600 focus-visible:after:ring-offset-2">{e(p["name"])}</button>
+              </h3>
+              <p class="mt-1 text-[13px] leading-snug text-stone-600">{label}: {e(p["fixes"])}</p>
+              <p class="mt-1.5 text-[15px] font-bold text-ink">{e(price)}</p>
+            </article>
+          </li>'''
 
 
 def main():
-    groups = []
-    for cat, title, blurb in CATEGORIES:
-        items = [p for p in PRODUCTS if p["cat"] == cat]
-        if not items:
-            continue
-        n = len(items)
-        groups.append(f'''          <section data-group="{cat}" aria-labelledby="g-{cat}" class="rounded-2xl border border-slate-200 bg-white/70 p-2.5 sm:p-4">
-            <div class="mb-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-1">
-              <h3 id="g-{cat}" class="font-display text-[26px] font-bold leading-none">{html.escape(title)}</h3>
-              <p class="text-sm text-slate-600">{html.escape(blurb)} · {n} part{"s" if n != 1 else ""}</p>
-            </div>
-            <ul role="list" class="grid grid-cols-2 gap-2.5 sm:gap-3.5 md:grid-cols-3 lg:grid-cols-4">
-{chr(10).join(card(p) for p in items)}
-            </ul>
-          </section>''')
-    block = "<!-- PRODUCTS:START -->\n" + "\n".join(groups) + "\n          <!-- PRODUCTS:END -->"
+    block = "<!-- PRODUCTS:START -->\n" + "\n".join(card(p) for p in PRODUCTS) + "\n          <!-- PRODUCTS:END -->"
     src = INDEX.read_text(encoding="utf-8")
     pat = re.compile(r"<!-- PRODUCTS:START -->.*?<!-- PRODUCTS:END -->", re.S)
     if not pat.search(src):
         raise SystemExit("PRODUCTS markers not found in index.html")
     INDEX.write_text(pat.sub(lambda _: block, src, count=1), encoding="utf-8")
-    print(f"Catalog built: {len(PRODUCTS)} products in {len(groups)} groups")
+    print(f"Catalog built: {len(PRODUCTS)} products in {len(set(p['cat'] for p in PRODUCTS))} categories")
 
 
 if __name__ == "__main__":
