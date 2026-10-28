@@ -83,6 +83,13 @@ a, button, summary { -webkit-tap-highlight-color: transparent; }
 .slide-copy > :nth-child(4) { transition-delay: 180ms; }
 .js-slide[inert] .slide-copy > * { opacity: 0; transform: translateY(14px); transition-delay: 0ms; }
 
+/* Hero photo: slow zoom while its slide is showing; the active dot fills up
+   to show when the next slide comes (only while the slideshow is playing) */
+.slide-img { transform: scale(1.0); transition: transform 600ms cubic-bezier(0.2, 0, 0, 1); }
+.js-slide:not([inert]) .slide-img { transform: scale(1.06); transition: transform 7s cubic-bezier(0.2, 0, 0.3, 1); }
+@keyframes dot-fill { to { transform: scaleX(1); } }
+.js-slider.is-playing .js-dot[aria-current="true"] .dot-bar { animation: dot-fill var(--slide-ms, 6000ms) linear forwards; }
+
 /* FAQ answers open smoothly where the browser supports it (others just open) */
 :root { interpolate-size: allow-keywords; }
 details::details-content { block-size: 0; overflow-y: clip; transition: block-size 280ms cubic-bezier(0.2, 0, 0, 1), content-visibility 280ms allow-discrete; }
@@ -97,4 +104,5 @@ details[open]::details-content { block-size: auto; }
     animation: none !important; transition: none !important;
   }
   .js [data-reveal], .js-slide[inert] .slide-copy > * { opacity: 1; transform: none; }
+  .js-slide .slide-img { transform: none !important; }
 }

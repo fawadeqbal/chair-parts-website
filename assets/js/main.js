@@ -116,13 +116,39 @@
 
   /* ---------- Hero slider ----------
      A native scroll-snap strip: swipe works with no JS. JS adds the
-     01/02/03 and arrow controls and keeps them in step. No auto-play. */
+     01/02/03, arrows and a slideshow that moves on every SLIDE_MS.
+     The slideshow has a pause button (WCAG 2.2.2), waits while the visitor
+     hovers, focuses or touches the hero, stops when the hero is off screen
+     or the tab is hidden, and never runs for reduced-motion visitors. */
   var slider = document.querySelector('.js-slider');
   if (slider) {
+    var SLIDE_MS = 6000;
     var track = slider.querySelector('.js-track');
     var slides = slider.querySelectorAll('.js-slide');
     var dots = slider.querySelectorAll('.js-dot');
+    var playBtn = slider.querySelector('.js-play');
     var current = 0;
+    var userPaused = false;   // pressed the pause button
+    var holds = {};           // temporary reasons to wait: hover, focus, touch, offscreen, hidden
+    var playTimer = null;
+
+    slider.style.setProperty('--slide-ms', SLIDE_MS + 'ms');
+
+    var canPlay = function () {
+      return !reduceMotion.matches && !userPaused && !Object.keys(holds).some(function (k) { return holds[k]; });
+    };
+    var schedule = function () {
+      window.clearTimeout(playTimer);
+      var on = canPlay();
+      // restart the dot's fill animation from zero
+      slider.classList.remove('is-playing');
+      if (on) {
+        void slider.offsetWidth;
+        slider.classList.add('is-playing');
+        playTimer = window.setTimeout(function () { goTo(current + 1); }, SLIDE_MS);
+      }
+    };
+    var hold = function (reason, on) { holds[reason] = on; schedule(); };
 
     var markCurrent = function (i) {
       current = i;
@@ -131,12 +157,36 @@
       });
       // Off-screen slides leave the tab order, so Tab never lands on a hidden link
       slides.forEach(function (s, k) { s.inert = k !== i; });
+      schedule();
     };
     var goTo = function (i) {
       i = (i + slides.length) % slides.length;
       track.scrollTo({ left: i * track.clientWidth, behavior: behavior() });
       markCurrent(i);
     };
+
+    if (playBtn && !reduceMotion.matches) {
+      playBtn.classList.remove('hidden');
+      playBtn.classList.add('grid');
+      playBtn.addEventListener('click', function () {
+        userPaused = !userPaused;
+        playBtn.setAttribute('aria-label', userPaused ? 'Play slideshow' : 'Pause slideshow');
+        playBtn.querySelector('.js-icon-pause').classList.toggle('hidden', userPaused);
+        playBtn.querySelector('.js-icon-play').classList.toggle('hidden', !userPaused);
+        schedule();
+      });
+    }
+    slider.addEventListener('pointerenter', function (e) { if (e.pointerType === 'mouse') hold('hover', true); });
+    slider.addEventListener('pointerleave', function (e) { if (e.pointerType === 'mouse') hold('hover', false); });
+    // Keyboard focus inside the hero waits (a mouse click on a dot shouldn't stop it for good)
+    slider.addEventListener('focusin', function (e) { if (e.target.matches(':focus-visible')) hold('focus', true); });
+    slider.addEventListener('focusout', function (e) { if (!slider.contains(e.relatedTarget)) hold('focus', false); });
+    track.addEventListener('touchstart', function () { hold('touch', true); }, { passive: true });
+    track.addEventListener('touchend', function () { hold('touch', false); }, { passive: true });
+    document.addEventListener('visibilitychange', function () { hold('hidden', document.hidden); });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) { hold('offscreen', !entries[0].isIntersecting); }, { threshold: 0.3 }).observe(slider);
+    }
     var ticking = false;
     track.addEventListener('scroll', function () {
       if (ticking) return;

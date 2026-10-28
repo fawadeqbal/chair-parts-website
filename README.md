@@ -45,7 +45,7 @@ Single questions still go straight to WhatsApp ("Send a photo", "Ask on WhatsApp
 ## Design and motion
 
 - **Colours** (`tailwind.config.js`): ink, cream and sand surfaces; deep navy hero; **clay** for small accents on light backgrounds; **brass** for highlights on dark backgrounds only. Every pairing is contrast-checked (notes in the config).
-- **Micro-interactions** (all switched off for visitors who prefer reduced motion): header shadow on scroll, sections fade up as they enter, product photos fade in, card hover lift with a "Quick view" hint, + button pop and an "Added to quote" toast with a *View list* shortcut, arrows that nudge on hover, hero text that rises in per slide, smooth FAQ opening, and a "Popular searches" panel on the search box. Searching "repair" / "fix" goes straight to the repair section.
+- **Micro-interactions** (all switched off for visitors who prefer reduced motion): header shadow on scroll, sections fade up as they enter, product photos fade in, card hover lift with a "Quick view" hint, + button pop and an "Added to quote" toast with a *View list* shortcut, arrows that nudge on hover, hero text that rises in per slide, a slideshow that moves on every 6 s (pause button; waits on hover, keyboard focus or touch; off for reduced motion) with a filling progress line under the current number and a slow photo zoom, smooth FAQ opening, and a "Popular searches" panel on the search box. Searching "repair" / "fix" goes straight to the repair section.
 
 ## Deploy (GitHub Pages)
 
@@ -65,7 +65,7 @@ The page is client-ready, with no visible placeholders. A few details came from 
 | "5.0 · 4 Google reviews" | Visit section | From the Google Maps listing at the time of writing |
 | Map pin and directions | Visit section | Pinned to the shop's Google Maps place ("Chair Parts", Shop # 0/789, Kohati Bazar) |
 | Chair models | Office/gaming chair cards, hero slides | Four generic chair types stand in for the actual imported models. Replace with the real models, names and photos |
-| Product photos | Cards, hero, category tiles, banners | Free-licensed stand-ins from Wikimedia Commons (credited in the footer). Replace with the shop's own photos (hotlinked Wikimedia images can also set a Wikimedia cookie, which costs a few Lighthouse best-practice points) |
+| Photos | Chairs, hero, category tiles, banners, parts | Chair and repair photos are free stand-ins from Unsplash (Unsplash License, hotlinked from Unsplash's image CDN). Part photos are from Wikimedia Commons (CC BY-SA 4.0). All are credited in the footer. Replace them with the shop's own photos; Wikimedia images can also set a Wikimedia cookie, which costs a few Lighthouse best-practice points |
 | Prices | Product cards | Cards show "Price on request". Set `price` per product in `tools/build-products.py` to show "from Rs …" |
 | Repairs | Hero slide 3, Repairs section, FAQ | Says repairs are done at the shop with no prices or turnaround times — add those if the owner wants them shown |
 | Delivery | How it works, step 3 | Says "ask us about getting it sent to you" — update if the shop delivers |
@@ -76,7 +76,7 @@ Note: the Google listing shows a second phone number (0340-5791689). The site on
 ## Editing common things
 
 - **Products:** edit `PRODUCTS` in `tools/build-products.py` (name, category, note, badge, photo, price). Chairs use `kind="chair"` (card says "Good for"), parts say "Fixes". Then run `python3 tools/build-products.py && python3 tools/update-structured-data.py`.
-- **Real photos:** put them in `assets/img/parts/`, add an entry to `PHOTOS` with `"src": "assets/img/parts/<file>.webp"` (add `"fit": "contain"` for cut-outs on white), and point the product's `photo` at it. Same angle and white background for every part works best.
+- **Real photos:** for an Unsplash photo add `{"unsplash": "photo-…"}` to `PHOTOS` (the id from the image address; never a `premium_photo-` one, those are paid Unsplash+). For the shop's own photos put them in `assets/img/parts/`, add an entry to `PHOTOS` with `"src": "assets/img/parts/<file>.webp"` (add `"fit": "contain"` for cut-outs on white), and point the product's `photo` at it. Same angle and white background for every part works best.
 - **Specs (phase 3):** when the owner supplies supplier labels, add them to each product and show up to 3 chips (Fit / Strength / Size) — see the design spec.
 - **Measuring guides:** `MEASURE` in `assets/js/main.js`, one list per part kind.
 - **Phone / WhatsApp number:** `index.html` (`tel:` links and text) and `WHATSAPP_NUMBER` in `assets/js/main.js`.
