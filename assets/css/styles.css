@@ -295,21 +295,21 @@ button { font: inherit; }
 .count { font-size: 15px; color: var(--ink-2); }
 
 /* ---------- Product cards ---------- */
-/* Phones: compact side-by-side card (picture left, details right) */
-.products { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+/* Phones: two cards per row, photo on top (shop-style grid) */
+.products { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .card {
-  background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg);
-  overflow: hidden; display: grid; grid-template-columns: 104px minmax(0, 1fr);
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; display: flex; flex-direction: column; min-width: 0;
 }
 .card[hidden] { display: none; }
 .card__media {
-  position: relative; overflow: hidden; background: var(--tint); min-height: 132px;
+  position: relative; overflow: hidden; background: var(--tint); height: 132px;
 }
 .card__img {
   position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; transition: transform 0.35s ease;
 }
-.card__img--contain { object-fit: contain; background: #fff; padding: 10px; }
+.card__img--contain { object-fit: contain; background: #fff; padding: 8px; }
 .card:hover .card__img { transform: scale(1.04); }
 .card__cat, .card__badge {
   position: absolute; z-index: 1; top: 8px; font-size: 11px; font-weight: 700;
@@ -317,15 +317,17 @@ button { font: inherit; }
   box-shadow: 0 2px 6px rgba(14, 26, 68, 0.15);
 }
 .card__cat { display: none; left: 10px; background: #fff; color: #2A3A6E; }
-.card__badge { left: 6px; right: 6px; text-align: center; background: var(--navy); color: var(--gold); }
-.card__body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0; }
-.card__title { font-size: 17px; font-weight: 700; line-height: 1.25; }
+.card__badge { left: 8px; background: var(--navy); color: var(--gold); }
+.card__body { padding: 10px 10px 12px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; min-width: 0; }
+.card__title { font-size: 15px; font-weight: 700; line-height: 1.25; }
 .card__fix {
-  align-self: flex-start; font-size: 13px; font-weight: 600; color: var(--red-dark);
-  background: var(--red-soft); padding: 3px 8px; border-radius: 6px;
+  align-self: flex-start; font-size: 12px; font-weight: 600; color: var(--red-dark);
+  background: var(--red-soft); padding: 3px 7px; border-radius: 6px; line-height: 1.3;
 }
-.card__note { font-size: 14px; line-height: 1.45; color: var(--ink-2); flex-grow: 1; }
-.card .btn { min-height: 44px; font-size: 15px; padding: 10px 12px; margin-top: 4px; }
+.card__note { display: none; font-size: 14px; line-height: 1.45; color: var(--ink-2); }
+.card .btn { min-height: 44px; font-size: 15px; padding: 8px 10px; margin-top: auto; gap: 6px; }
+.card .btn svg { flex-shrink: 0; }
+.lbl-lg { display: none; }
 .products__more { margin-top: 20px; text-align: center; font-size: 16px; color: var(--ink-2); }
 .products__more a { font-weight: 700; }
 
@@ -424,15 +426,19 @@ button { font: inherit; }
    ≥ 480px — large phones
    ========================================================================== */
 @media (min-width: 480px) {
-  /* Larger phones and up: picture-on-top card in a grid */
-  .products { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-  .card { display: flex; flex-direction: column; }
-  .card__media { height: 170px; min-height: 0; }
+  /* Larger phones and up: roomier cards with description */
+  .products { gap: 14px; }
+  .card { border-radius: var(--radius-lg); }
+  .card__media { height: 170px; }
   .card__cat { display: block; }
   .card__badge { left: auto; right: 10px; }
   .card__body { padding: 14px 16px 16px; gap: 8px; }
-  .card__note { font-size: 15px; }
-  .card .btn { min-height: 48px; font-size: 16px; }
+  .card__title { font-size: 17px; }
+  .card__fix { font-size: 13px; }
+  .card__note { display: block; flex-grow: 1; font-size: 15px; }
+  .card .btn { min-height: 48px; font-size: 16px; margin-top: 4px; }
+  .lbl-sm { display: none; }
+  .lbl-lg { display: inline; }
   .compare { padding: 22px; }
 }
 
