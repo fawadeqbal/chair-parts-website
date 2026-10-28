@@ -80,10 +80,48 @@
     });
   });
 
-  /* ---------- Problem finder → filter products ---------- */
-  document.querySelectorAll('.problem[data-filter]').forEach(function (link) {
+  /* ---------- Hero tiles + problem finder → filter products ---------- */
+  document.querySelectorAll('a[data-filter]').forEach(function (link) {
     link.addEventListener('click', function () {
       applyFilter(link.getAttribute('data-filter'));
     });
   });
+
+  /* ---------- Open / closed badge ----------
+     Hours as listed on the shop's Google Maps page (confirm with owner):
+     Saturday–Thursday 9:00–17:00, Friday closed. Times are Pakistan time (UTC+5). */
+  var OPEN_HOUR = 9;
+  var CLOSE_HOUR = 17;
+  var CLOSED_DAY = 5; // Friday (0 = Sunday)
+  var DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  var statusEl = document.querySelector('.js-status');
+  var statusText = document.querySelector('.js-status-text');
+
+  function updateStatus() {
+    if (!statusEl || !statusText) return;
+    var now = new Date();
+    var pk = new Date(now.getTime() + (now.getTimezoneOffset() + 300) * 60000);
+    var day = pk.getDay();
+    var hour = pk.getHours() + pk.getMinutes() / 60;
+    var isOpen = day !== CLOSED_DAY && hour >= OPEN_HOUR && hour < CLOSE_HOUR;
+    var text;
+
+    if (isOpen) {
+      text = 'Open now · until 5pm';
+    } else if (day !== CLOSED_DAY && hour < OPEN_HOUR) {
+      text = 'Closed · opens today 9am';
+    } else {
+      var next = (day + 1) % 7;
+      if (next === CLOSED_DAY) next = (next + 1) % 7;
+      text = 'Closed · opens ' + (next === (day + 1) % 7 ? 'tomorrow' : DAY_NAMES[next]) + ' 9am';
+    }
+
+    statusText.textContent = text;
+    statusEl.classList.toggle('is-open', isOpen);
+    statusEl.hidden = false;
+  }
+
+  updateStatus();
+  setInterval(updateStatus, 60000);
 })();
