@@ -7,6 +7,14 @@
    WhatsApp green for chat actions only, a little ochre for highlights.
    ========================================================================== */
 
+/* ---------- Fonts (self-hosted Barlow, SIL Open Font License) ---------- */
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 400; font-display: swap; src: url("../fonts/barlow-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: swap; src: url("../fonts/barlow-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: swap; src: url("../fonts/barlow-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 700; font-display: swap; src: url("../fonts/barlow-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 700; font-display: swap; src: url("../fonts/barlow-condensed-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-style: italic; font-weight: 700; font-display: swap; src: url("../fonts/barlow-condensed-latin-700-italic.woff2") format("woff2"); }
+
 /* ---------- Tokens ---------- */
 :root {
   --bg: #F7F5F0;
@@ -215,8 +223,12 @@ button { font: inherit; }
 .hero__copy { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 
 .hero__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; font-size: 14px; font-weight: 600; color: var(--ink-2); }
-.hero__place { display: inline-flex; align-items: center; gap: 6px; }
-.hero__place svg { color: var(--primary); }
+.hero__kicker {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 14px;
+  font-family: var(--font-body); font-size: 14px; font-weight: 600; line-height: 1.4;
+  letter-spacing: 0; color: var(--ink-2);
+}
+.hero__kicker svg { color: var(--primary); flex-shrink: 0; }
 .status {
   display: inline-flex; align-items: center; gap: 8px; padding: 5px 11px 5px 9px;
   border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink);
@@ -419,6 +431,7 @@ button { font: inherit; }
 .footer { background: var(--dark); color: var(--on-dark-2); }
 .footer__inner { display: flex; flex-direction: column; gap: 6px; padding-block: 24px; font-size: 15px; }
 .footer a { color: #fff; font-weight: 600; }
+.footer__address { font-style: normal; }
 .credits { width: 100%; font-size: 13px; }
 .credits summary { cursor: pointer; color: var(--on-dark-2); min-height: 44px; display: flex; align-items: center; }
 .credits p { line-height: 1.6; padding-bottom: 8px; }

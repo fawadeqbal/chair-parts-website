@@ -1,0 +1,8 @@
+# Search engines may crawl everything.
+# Note: on github.io project sites, crawlers read robots.txt from the domain root
+# (fawadeqbal.github.io/robots.txt), so this file takes effect once the site has
+# its own domain. Submit the sitemap in Google Search Console in the meantime.
+User-agent: *
+Allow: /
+
+Sitemap: https://fawadeqbal.github.io/chair-parts-website/sitemap.xml
