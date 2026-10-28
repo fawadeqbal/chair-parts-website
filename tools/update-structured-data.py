@@ -45,8 +45,8 @@ BUSINESS = {
 
 
 def text(fragment: str) -> str:
-    """Strip tags and collapse whitespace."""
-    fragment = re.sub(r'<span class="faq__plus"[^>]*>.*?</span>', "", fragment, flags=re.S)
+    """Strip tags (and decorative aria-hidden bits) and collapse whitespace."""
+    fragment = re.sub(r'<(span|svg)[^>]*aria-hidden="true"[^>]*>.*?</\1>', "", fragment, flags=re.S)
     fragment = re.sub(r"<[^>]+>", "", fragment)
     return re.sub(r"\s+", " ", html.unescape(fragment)).strip()
 
@@ -54,20 +54,23 @@ def text(fragment: str) -> str:
 def main() -> None:
     src = INDEX.read_text(encoding="utf-8")
 
+    # Only the FAQ section (the footer's "Photo credits" is a <details> too)
+    faq_start = src.index('id="faq-title"')
+    faq_html = src[faq_start:src.index("</section>", faq_start)]
     faq = [
         {"@type": "Question", "name": text(q),
          "acceptedAnswer": {"@type": "Answer", "text": text(a)}}
-        for q, a in re.findall(r"<details>\s*<summary>(.*?)</summary>.*?<p>(.*?)</p>\s*</details>", src, flags=re.S)
+        for q, a in re.findall(r"<details[^>]*>\s*<summary[^>]*>(.*?)</summary>\s*<p[^>]*>(.*?)</p>\s*</details>",
+                               faq_html, flags=re.S)
     ]
 
     products = []
-    for card in re.findall(r'<li class="card".*?</li>', src, flags=re.S):
-        name = text(re.search(r'class="card__title">(.*?)</h3>', card, re.S).group(1))
-        note = re.search(r'class="card__note">(.*?)</p>', card, re.S)
+    for card in re.findall(r"<article[^>]*data-card[^>]*>.*?</article>", src, flags=re.S):
+        attr = lambda k: html.unescape(re.search(rf'data-{k}="([^"]*)"', card).group(1))
+        name = attr("name")
         img = re.search(r'<img[^>]+src="([^"]+)"', card)
-        item = {"@type": "Product", "name": name, "brand": {"@type": "Brand", "name": "Ali Chair Parts"}}
-        if note:
-            item["description"] = text(note.group(1))
+        item = {"@type": "Product", "name": name, "description": attr("note"),
+                "brand": {"@type": "Brand", "name": "Ali Chair Parts"}}
         if img:
             item["image"] = img.group(1)
         products.append({"@type": "Offer", "itemOffered": item, "availability": "https://schema.org/InStock",

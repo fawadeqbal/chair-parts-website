@@ -1,0 +1,62 @@
+/* Source stylesheet. Build with `npm run build:css` → assets/css/tw.css (CI does this on every deploy). */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ---------- Fonts: self-hosted Barlow (SIL Open Font License) ---------- */
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 400; font-display: swap; src: url("../fonts/barlow-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 500; font-display: swap; src: url("../fonts/barlow-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 600; font-display: swap; src: url("../fonts/barlow-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow"; font-style: normal; font-weight: 700; font-display: swap; src: url("../fonts/barlow-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 700; font-display: swap; src: url("../fonts/barlow-condensed-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-style: italic; font-weight: 700; font-display: swap; src: url("../fonts/barlow-condensed-latin-700-italic.woff2") format("woff2"); }
+
+@layer base {
+  html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+  body { @apply bg-slate-50 font-sans text-slate-900 antialiased; }
+  [id] { scroll-margin-top: 5.5rem; }
+  /* Never remove focus without a replacement: one ring for everything */
+  :focus-visible { outline: 2px solid theme('colors.brand.600'); outline-offset: 2px; }
+  summary { list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+}
+
+@layer components {
+  /* Buttons: one shape, three looks. 48px+ tall targets. */
+  .btn { @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 text-base font-bold leading-tight transition-colors duration-150 ease-out active:translate-y-px disabled:pointer-events-none disabled:opacity-50; }
+  .btn-lg { @apply min-h-14 px-6 text-[17px]; }
+  .btn-action { @apply bg-emerald-700 text-white hover:bg-emerald-800; }
+  .btn-outline { @apply border border-slate-300 bg-white text-slate-900 hover:border-slate-900; }
+  .btn-dark { @apply bg-slate-900 text-white hover:bg-black; }
+  .btn-on-dark { @apply border border-slate-600 text-white hover:border-white; }
+  .field { @apply mt-1 block min-h-12 w-full rounded-lg border border-slate-500 bg-white px-3 text-base text-slate-900 placeholder:text-slate-500 aria-[invalid=true]:border-red-700; }
+  .eyebrow { @apply text-[13px] font-bold uppercase tracking-wider text-amber-800; }
+  .h2 { @apply font-display text-[34px] font-bold leading-[1.02] tracking-tight md:text-[46px]; }
+}
+
+/* ---------- Motion ---------- */
+/* Dialogs: bottom sheet on phones, rise-in on larger screens */
+dialog[open] { animation: sheet-in 280ms cubic-bezier(0.2, 0, 0, 1); }
+dialog[open]::backdrop { animation: fade-in 200ms linear; }
+@keyframes sheet-in { from { transform: translateY(100%); } }
+@keyframes fade-in { from { opacity: 0; } }
+@keyframes pop-in { from { opacity: 0; transform: translateY(16px); } }
+@media (min-width: 640px) {
+  dialog[open] { animation-name: pop-in; animation-duration: 240ms; }
+}
+body:has(dialog[open]) { overflow: hidden; }
+
+/* Filter changes: cards glide to their new slots where View Transitions exist */
+::view-transition-group(*) { animation-duration: 220ms; animation-timing-function: cubic-bezier(0.2, 0, 0, 1); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 160ms; }
+
+/* Quote counter pop */
+@keyframes pop { 50% { transform: scale(1.18); } }
+.is-popping { animation: pop 240ms cubic-bezier(0.2, 0, 0, 1); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after, dialog[open], dialog[open]::backdrop, ::view-transition-group(*) {
+    animation: none !important; transition: none !important;
+  }
+}

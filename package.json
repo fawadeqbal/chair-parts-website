@@ -1,0 +1,14 @@
+{
+  "name": "chair-parts-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ali Chair Parts — office & gaming chair parts, Kohati Bazar, Rawalpindi.",
+  "scripts": {
+    "build:css": "tailwindcss -i ./src/input.css -o ./assets/css/tw.css --minify",
+    "watch:css": "tailwindcss -i ./src/input.css -o ./assets/css/tw.css --watch",
+    "seo": "python3 tools/update-structured-data.py"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.19"
+  }
+}
