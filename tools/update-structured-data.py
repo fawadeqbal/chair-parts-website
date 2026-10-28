@@ -22,9 +22,9 @@ BUSINESS = {
     "name": "Ali Chair Parts",
     "alternateName": "Chair Parts",
     "description": (
-        "Importer and seller of office and gaming chairs and replacement chair parts in Kohati Bazar, "
-        "Rawalpindi: imported chairs, gas lift cylinders, 5-star chair bases, castor wheels, armrests, "
-        "tilt and synchro mechanisms and seat foam. Wholesale, retail and general order supplier."
+        "New imported office and gaming chairs, replacement chair parts and chair repairs in Kohati Bazar, "
+        "Rawalpindi: gas lift cylinders, 5-star chair bases, castor wheels, armrests, tilt and synchro "
+        "mechanisms, seat foam and covers, fitted at the shop on request. Wholesale, retail and general order supplier."
     ),
     "telephone": "+92-300-2603791",
     "street": "Shop # 0/789, Near Shahid Steel Store, Kohati Bazar",
@@ -76,6 +76,14 @@ def main() -> None:
         products.append({"@type": "Offer", "itemOffered": item, "availability": "https://schema.org/InStock",
                          "seller": {"@id": SITE_URL + "#business"}})
 
+    # The repair service, alongside the products
+    products.append({"@type": "Offer", "itemOffered": {
+        "@type": "Service", "name": "Office and gaming chair repair", "serviceType": "Chair repair",
+        "description": "Chairs repaired at the shop: gas lift, castor wheels, base, armrests, mechanism, seat foam and cover replaced.",
+        "areaServed": [{"@type": "City", "name": c} for c in BUSINESS["areaServed"]],
+        "provider": {"@id": SITE_URL + "#business"}},
+        "seller": {"@id": SITE_URL + "#business"}})
+
     b = BUSINESS
     graph = {
         "@context": "https://schema.org",
@@ -112,10 +120,10 @@ def main() -> None:
                     "@type": "ContactPoint", "telephone": b["telephone"], "contactType": "sales",
                     "availableLanguage": ["en", "ur"],
                 },
-                "knowsAbout": ["Imported office chairs", "Gaming chairs", "Office chair repair parts", "Gas lift cylinders", "Chair castor wheels",
+                "knowsAbout": ["Imported office chairs", "Gaming chairs", "Office chair repair", "Office chair repair parts", "Gas lift cylinders", "Chair castor wheels",
                                "5-star chair bases", "Chair armrests", "Chair tilt mechanisms"],
                 "hasOfferCatalog": {
-                    "@type": "OfferCatalog", "name": "Office and gaming chairs and parts",
+                    "@type": "OfferCatalog", "name": "Office and gaming chairs, parts and repairs",
                     "itemListElement": products,
                 },
             },

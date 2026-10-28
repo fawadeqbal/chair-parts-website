@@ -159,6 +159,16 @@
     markCurrent(0);
   }
 
+  /* ---------- "Need help?" pill: hidden while the hero is on screen,
+     so it never covers the slider arrows ---------- */
+  var help = document.querySelector('.js-help');
+  if (help && slider && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      var heroVisible = entries[0].isIntersecting;
+      ['invisible', 'opacity-0', 'translate-y-3'].forEach(function (c) { help.classList.toggle(c, heroVisible); });
+    }, { threshold: 0.15 }).observe(slider);
+  }
+
   /* ---------- Catalog: category tabs + search ---------- */
   var chips = document.querySelectorAll('[data-chip]');
   var items = Array.prototype.slice.call(document.querySelectorAll('.js-grid > li'));
@@ -397,6 +407,7 @@
     qv.querySelector('[data-qv-note]').textContent = d.note;
     qv.querySelector('[data-qv-price]').textContent = d.price;
     qv.querySelector('[data-qv-guide-title]').textContent = d.kind === 'chair' ? 'Before you buy' : 'Check your old part';
+    qv.querySelector('[data-qv-fit]').hidden = d.kind === 'chair'; // parts: "we can fit it for you"
     var list = qv.querySelector('[data-qv-measure]');
     list.replaceChildren.apply(list, (MEASURE[d.kind] || []).map(function (step) {
       var li = document.createElement('li');
