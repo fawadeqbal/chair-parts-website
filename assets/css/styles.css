@@ -532,7 +532,7 @@ button { font: inherit; }
   .hero__lead { font-size: 20px; }
   .hero__media { grid-template-rows: repeat(3, 150px); gap: 12px; position: relative; }
   .hero__note {
-    position: absolute; left: -28px; bottom: -22px; grid-column: auto;
+    position: absolute; left: -28px; top: 24px; grid-column: auto;
     box-shadow: var(--shadow); max-width: 300px;
   }
 
